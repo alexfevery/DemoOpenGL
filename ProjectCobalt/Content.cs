@@ -16,6 +16,9 @@ namespace ProjectCobalt
 {
     class Content
     {
+        public static int FloatSizeInBytes = 4;
+        public static int VertexAttributeCount = 5;
+
         public class Vertex
         {
             public Vector3 Position;
@@ -250,17 +253,17 @@ namespace ProjectCobalt
                 GL.EnableVertexAttribArray(1);//
 
                 GL.BindBuffer(BufferTarget.ArrayBuffer, v1.VertexBufferID);
-                GL.BufferData(BufferTarget.ArrayBuffer, (global.FloatSizeInBytes * v1.VertexBuffer.Count()), v1.VertexBuffer.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ArrayBuffer, (FloatSizeInBytes * v1.VertexBuffer.Count()), v1.VertexBuffer.ToArray(), BufferUsageHint.StaticDraw);
 
-                GL.VertexPointer(3, VertexPointerType.Float, global.FloatSizeInBytes * global.VertexAttributeCount, 0);
-                GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, global.FloatSizeInBytes * global.VertexAttributeCount, 0);
+                GL.VertexPointer(3, VertexPointerType.Float, FloatSizeInBytes * VertexAttributeCount, 0);
+                GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, FloatSizeInBytes * VertexAttributeCount, 0);
 
-                GL.TexCoordPointer(2, TexCoordPointerType.Float, global.FloatSizeInBytes * global.VertexAttributeCount, 12);
-                GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, global.FloatSizeInBytes * global.VertexAttributeCount, 12);
+                GL.TexCoordPointer(2, TexCoordPointerType.Float, FloatSizeInBytes * VertexAttributeCount, 12);
+                GL.VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, FloatSizeInBytes * VertexAttributeCount, 12);
 
                 v1.IndexBufferID = GL.GenBuffer();
                 GL.BindBuffer(BufferTarget.ElementArrayBuffer, v1.IndexBufferID);
-                GL.BufferData(BufferTarget.ElementArrayBuffer, (global.FloatSizeInBytes * v1.IndexBuffer.Count()), v1.IndexBuffer.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ElementArrayBuffer, (FloatSizeInBytes * v1.IndexBuffer.Count()), v1.IndexBuffer.ToArray(), BufferUsageHint.StaticDraw);
                 GL.BindVertexArray(0);
                 GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
                 GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
