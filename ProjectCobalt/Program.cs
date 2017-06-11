@@ -8,6 +8,7 @@ using FileFormatWavefront.Model;
 using FileFormatWavefront;
 using OpenTK.Input;
 using System.Threading;
+using System.Configuration;
 
 namespace ProjectCobalt
 {
@@ -36,7 +37,6 @@ namespace ProjectCobalt
                 gamewindow.UpdateFrame += (sender, e) => { Update(); };
                 gamewindow.RenderFrame += (sender, e) => { Render(); };
                 gamewindow.Run();
-
             }
         }
 
