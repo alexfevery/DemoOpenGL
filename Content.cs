@@ -18,6 +18,7 @@ namespace ProjectCobalt
     {
         public static int FloatSizeInBytes = 4;
         public static int VertexAttributeCount = 5;
+        private static Dictionary<string, Mesh> Meshlist = new Dictionary<string, Mesh>();
 
         public class Vertex
         {
@@ -61,7 +62,6 @@ namespace ProjectCobalt
                 int id = GL.GenTexture();
                 GL.BindTexture(TextureTarget.Texture2D, id);
                 Bitmap bmp = new Bitmap("GameContent/TestTexture.png");
-
                 bmp.RotateFlip(RotateFlipType.Rotate180FlipNone);
                 BitmapData data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, data.Width, data.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
@@ -90,74 +90,64 @@ namespace ProjectCobalt
                 }
             }
 
-            public static Mesh LoadObj(string path)
+            public static Mesh LoadObj(string path,bool indexed)
             {
                 Mesh m1 = new Mesh();
-                bool loadTextureImages = true;
-                FileLoadResult<Scene> objdata = FileFormatObj.Load(path, loadTextureImages);
-                m1.VertexList = objdata.Model.Vertices.Select(x => new Vertex(new Vector3(x.x, x.y, x.z), new Vector2(-1, -1))).ToList();
-
-                m1.groups = new List<Group>();
-                if (objdata.Model.Groups.Count() == 0)
+                if (!Meshlist.TryGetValue(path, out m1))
                 {
-                    Group g1 = new Group();
-                    g1.IndexList = new List<uint>();
-                    foreach (Face f1 in objdata.Model.UngroupedFaces)
-                    {
-                        g1.IndexList.Add((uint)f1.Indices[0].vertex);
-                        if ((objdata.Model.Uvs.Count != 0) && m1.VertexList[f1.Indices[0].vertex].TexCoord.X < 0)
-                        {
-                            m1.VertexList[f1.Indices[0].vertex].TexCoord.X = objdata.Model.Uvs[(int)f1.Indices[0].uv].u;
-                            m1.VertexList[f1.Indices[0].vertex].TexCoord.Y = objdata.Model.Uvs[(int)f1.Indices[0].uv].v;
-                        }
-                        g1.IndexList.Add((uint)f1.Indices[1].vertex);
-                        if ((objdata.Model.Uvs.Count != 0) && m1.VertexList[f1.Indices[1].vertex].TexCoord.X < 0)
-                        {
-                            m1.VertexList[f1.Indices[1].vertex].TexCoord.X = objdata.Model.Uvs[(int)f1.Indices[1].uv].u;
-                            m1.VertexList[f1.Indices[1].vertex].TexCoord.Y = objdata.Model.Uvs[(int)f1.Indices[1].uv].v;
-                        }
-                        g1.IndexList.Add((uint)f1.Indices[2].vertex);
-                        if ((objdata.Model.Uvs.Count != 0) && m1.VertexList[f1.Indices[1].vertex].TexCoord.X < 0)
-                        {
-                            m1.VertexList[f1.Indices[2].vertex].TexCoord.X = objdata.Model.Uvs[(int)f1.Indices[2].uv].u;
-                            m1.VertexList[f1.Indices[2].vertex].TexCoord.Y = objdata.Model.Uvs[(int)f1.Indices[2].uv].v;
-                        }
-                    }
-                    m1.groups.Add(g1);
-                }
-                else
-                {
+                    m1 = new Mesh();
+                    bool loadTextureImages = true;
+                    FileLoadResult<Scene> objdata = FileFormatObj.Load(path, loadTextureImages);
+                    if (indexed) { m1.VertexList = objdata.Model.Vertices.Select(x => new Vertex(new Vector3(x.x, x.y, x.z), new Vector2(-1, -1))).ToList(); }
+                    else { m1.VertexList = new List<Vertex>(); }
+                    m1.groups = new List<Group>();
                     foreach (FileFormatWavefront.Model.Group g1 in objdata.Model.Groups)
                     {
+                        FileFormatWavefront.Model.Vertex[] normals = objdata.Model.Normals.ToArray();
+                        FileFormatWavefront.Model.UV[] uvs = objdata.Model.Uvs.ToArray();
+                        FileFormatWavefront.Model.Vertex[] verticies = objdata.Model.Vertices.ToArray();
+
                         Group meshgroup = new Group();
                         meshgroup.IndexList = new List<uint>();
                         foreach (Face f1 in g1.Faces)
                         {
-                            meshgroup.IndexList.Add((uint)f1.Indices[0].vertex);
-                            if ((objdata.Model.Uvs.Count != 0) && m1.VertexList[f1.Indices[0].vertex].TexCoord.X < 0)
+                            if (!indexed)
                             {
-                                m1.VertexList[f1.Indices[0].vertex].TexCoord.X = objdata.Model.Uvs[(int)f1.Indices[0].uv].u;
-                                m1.VertexList[f1.Indices[0].vertex].TexCoord.Y = objdata.Model.Uvs[(int)f1.Indices[0].uv].v;
+                                m1.VertexList.Add(new Vertex(new Vector3(verticies[f1.Indices[0].vertex].x, verticies[f1.Indices[0].vertex].y, verticies[f1.Indices[0].vertex].z), new Vector2(uvs[(int)f1.Indices[0].uv].u, uvs[(int)f1.Indices[0].uv].v)));
+                                m1.VertexList.Add(new Vertex(new Vector3(verticies[f1.Indices[1].vertex].x, verticies[f1.Indices[1].vertex].y, verticies[f1.Indices[1].vertex].z), new Vector2(uvs[(int)f1.Indices[1].uv].u, uvs[(int)f1.Indices[1].uv].v)));
+                                m1.VertexList.Add(new Vertex(new Vector3(verticies[f1.Indices[2].vertex].x, verticies[f1.Indices[2].vertex].y, verticies[f1.Indices[2].vertex].z), new Vector2(uvs[(int)f1.Indices[2].uv].u, uvs[(int)f1.Indices[2].uv].v)));
+                                meshgroup.IndexList.Add((uint)meshgroup.IndexList.Count());
+                                meshgroup.IndexList.Add((uint)meshgroup.IndexList.Count());
+                                meshgroup.IndexList.Add((uint)meshgroup.IndexList.Count());
                             }
-                            meshgroup.IndexList.Add((uint)f1.Indices[1].vertex);
-                            if ((objdata.Model.Uvs.Count != 0) && m1.VertexList[f1.Indices[1].vertex].TexCoord.X < 0)
+                            else
                             {
-                                m1.VertexList[f1.Indices[1].vertex].TexCoord.X = objdata.Model.Uvs[(int)f1.Indices[1].uv].u;
-                                m1.VertexList[f1.Indices[1].vertex].TexCoord.Y = objdata.Model.Uvs[(int)f1.Indices[1].uv].v;
-                            }
-                            meshgroup.IndexList.Add((uint)f1.Indices[2].vertex);
-                            if ((objdata.Model.Uvs.Count != 0) && m1.VertexList[f1.Indices[1].vertex].TexCoord.X < 0)
-                            {
-                                m1.VertexList[f1.Indices[2].vertex].TexCoord.X = objdata.Model.Uvs[(int)f1.Indices[2].uv].u;
-                                m1.VertexList[f1.Indices[2].vertex].TexCoord.Y = objdata.Model.Uvs[(int)f1.Indices[2].uv].v;
+
+                                meshgroup.IndexList.Add((uint)f1.Indices[0].vertex);
+                                if ((objdata.Model.Uvs.Count != 0) && m1.VertexList[f1.Indices[0].vertex].TexCoord.X < 0)
+                                {
+                                    m1.VertexList[f1.Indices[0].vertex].TexCoord.X = objdata.Model.Uvs[(int)f1.Indices[0].uv].u;
+                                    m1.VertexList[f1.Indices[0].vertex].TexCoord.Y = objdata.Model.Uvs[(int)f1.Indices[0].uv].v;
+                                }
+                                meshgroup.IndexList.Add((uint)f1.Indices[1].vertex);
+                                if ((objdata.Model.Uvs.Count != 0) && m1.VertexList[f1.Indices[1].vertex].TexCoord.X < 0)
+                                {
+                                    m1.VertexList[f1.Indices[1].vertex].TexCoord.X = objdata.Model.Uvs[(int)f1.Indices[1].uv].u;
+                                    m1.VertexList[f1.Indices[1].vertex].TexCoord.Y = objdata.Model.Uvs[(int)f1.Indices[1].uv].v;
+                                }
+                                meshgroup.IndexList.Add((uint)f1.Indices[2].vertex);
+                                if ((objdata.Model.Uvs.Count != 0) && m1.VertexList[f1.Indices[1].vertex].TexCoord.X < 0)
+                                {
+                                    m1.VertexList[f1.Indices[2].vertex].TexCoord.X = objdata.Model.Uvs[(int)f1.Indices[2].uv].u;
+                                    m1.VertexList[f1.Indices[2].vertex].TexCoord.Y = objdata.Model.Uvs[(int)f1.Indices[2].uv].v;
+                                }
                             }
                         }
                         m1.groups.Add(meshgroup);
                     }
+
+                    Meshlist.Add(path, m1);
                 }
-
-
-
                 return m1;
             }
 
@@ -268,7 +258,7 @@ namespace ProjectCobalt
                 GL.BindVertexArray(0);
                 GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
                 GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-                
+
                 return v1;
             }
 

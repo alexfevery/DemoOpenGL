@@ -9,6 +9,7 @@ using FileFormatWavefront;
 using OpenTK.Input;
 using System.Threading;
 using System.Configuration;
+using System.Windows.Forms;
 
 namespace ProjectCobalt
 {
@@ -17,21 +18,14 @@ namespace ProjectCobalt
         public static GameWindow gamewindow = new GameWindow();
         public static Point WindowCenter;
         public static Stopwatch watch = new Stopwatch();
-        public static Thread UIThread;
         public static int UntexturedShader;
         public static int TexturedShader;
         public static ErrorCode error;
 
         static void Main()
         {
-            UIThread = Thread.CurrentThread;
             using (gamewindow)
             {
-                gamewindow.VSync = VSyncMode.On;
-                gamewindow.WindowState = WindowState.Maximized;
-                //gamewindow.Height = 1000;
-                //gamewindow.Width = 2000;
-                gamewindow.Location = new Point((3840 - gamewindow.Width) / 2, (2160 - gamewindow.Height) / 2);
                 gamewindow.Load += (sender, e) => { Load(); };
                 gamewindow.Resize += (sender, e) => { Resize(); };
                 gamewindow.UpdateFrame += (sender, e) => { Update(); };
@@ -53,6 +47,9 @@ namespace ProjectCobalt
         public static Content.Mesh testmap;
         public static void Load()
         {
+            gamewindow.VSync = VSyncMode.On;
+            gamewindow.WindowState = WindowState.Maximized;
+            gamewindow.Location = new Point((Screen.PrimaryScreen.WorkingArea.Width - gamewindow.Width) / 2, (Screen.PrimaryScreen.WorkingArea.Height - gamewindow.Height) / 2);
             UntexturedShader = Shaders.LoadShaders(Shaders.VUntextured, Shaders.FUntextured);
             TexturedShader = Shaders.LoadShaders(Shaders.VTextured, Shaders.FTextured);
             GL.Enable(EnableCap.DepthTest);
@@ -61,19 +58,26 @@ namespace ProjectCobalt
             gamewindow.CursorVisible = false;
             GL.ClearColor(Color.Black);
 
-            testobj = Content.Mesh.LoadObj(@"C:\Users\alexf\Google Drive\Computer\Desktop\cube.obj");
+            testobj = Content.Mesh.LoadObj("GameContent/cube.obj",false);
             testobj.ShaderProgram = TexturedShader;
             testobj.Texture = Content.Mesh.LoadTexture();
-          //  testobj2 = Content.Mesh.LoadObj(@"C:\Users\alexf\Google Drive\Computer\Desktop\cube.obj");
-          //  testobj2.ShaderProgram = TexturedShader;
-           // testmap = Content.Mesh.LoadHeightMap(@"C:\Users\alexf\Google Drive\Computer\Desktop\Kauai terrain\Kauai Height Map (USGS NED 10m).png");
-           // testmap.ShaderProgram = UntexturedShader;
+            testobj2 = Content.Mesh.LoadObj("GameContent/cube.obj",false);
+            testobj2.ShaderProgram = TexturedShader;
+            testobj2.Texture = Content.Mesh.LoadTexture();
+            // testmap = Content.Mesh.LoadHeightMap("GameContent/TestMap.png");
+            // testmap.ShaderProgram = UntexturedShader;
         }
 
         public static void Update()
         {
             if (gamewindow.Focused) { Controls.GetControls(); }
             Camera.lookat = Camera.GetViewMatrix();
+            if (!w1.IsRunning || w1.ElapsedMilliseconds >= 1000)
+            {
+                gamewindow.Title = "Project Cobalt (" + gamewindow.Width + " x " + gamewindow.Height + ")" + " " + frames+(gamewindow.VSync == VSyncMode.On?" frames/second (Limited to Monitor Refresh rate)": " frames/second");
+                frames = 0;
+                w1.Restart();
+            }
         }
 
         public static float angle = 0;
@@ -95,7 +99,7 @@ namespace ProjectCobalt
 
             if (testobj != null){ testobj.Draw(Matrix4.CreateScale(.001f,.001f,.001f)*Matrix4.CreateTranslation(0,0.002f,0), PolygonMode.Fill);}
            // if (testmap != null){ testmap.Draw(Matrix4.CreateScale(.01f, .01f, .01f), PolygonMode.Line); }
-            //if (testobj2 != null) { testobj2.Draw(Matrix4.CreateScale(.001f, .001f, .001f) * Matrix4.CreateTranslation(0, -0.02f, 0), PolygonMode.Fill); }
+            if (testobj2 != null) { testobj2.Draw(Matrix4.CreateScale(.001f, .001f, .001f) * Matrix4.CreateTranslation(0, -0.02f, 0), PolygonMode.Fill); }
             
 
 
@@ -123,12 +127,7 @@ namespace ProjectCobalt
             GL.End();
             gamewindow.SwapBuffers();
             frames++;
-            if (!w1.IsRunning || w1.ElapsedMilliseconds >= 1000)
-            {
-                gamewindow.Title = "Project Cobalt (" + gamewindow.Width + " x " + gamewindow.Height + ")" + " -" + frames;
-                frames = 0;
-                w1.Restart();
-            }
+            
 
         }
     }
