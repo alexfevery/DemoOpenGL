@@ -197,6 +197,7 @@ namespace ProjectCobalt
                 foreach (Vertex v1 in m1.VertexList)
                 {
                     Vertex newtt = new Vertex(v1.Position.X / 10, v1.Position.Y * 5, v1.Position.Z / 10, 0, 0);
+                    if(v1.Position.Y < .001f) { continue; }
                     if (checkset1.ContainsKey(newtt)) { g1.IndexList.Add(checkset1[newtt]); }
                     else
                     {

@@ -61,11 +61,8 @@ namespace ProjectCobalt
             testobj = Content.Mesh.LoadObj("GameContent/cube.obj",false);
             testobj.ShaderProgram = TexturedShader;
             testobj.Texture = Content.Mesh.LoadTexture();
-            testobj2 = Content.Mesh.LoadObj("GameContent/cube.obj",false);
-            testobj2.ShaderProgram = TexturedShader;
-            testobj2.Texture = Content.Mesh.LoadTexture();
-            // testmap = Content.Mesh.LoadHeightMap("GameContent/TestMap.png");
-            // testmap.ShaderProgram = UntexturedShader;
+            testmap = Content.Mesh.LoadHeightMap("GameContent/TestMap.png");
+            testmap.ShaderProgram = UntexturedShader;
         }
 
         public static void Update()
@@ -97,9 +94,8 @@ namespace ProjectCobalt
 
 
 
-            if (testobj != null){ testobj.Draw(Matrix4.CreateScale(.001f,.001f,.001f)*Matrix4.CreateTranslation(0,0.002f,0), PolygonMode.Fill);}
-           // if (testmap != null){ testmap.Draw(Matrix4.CreateScale(.01f, .01f, .01f), PolygonMode.Line); }
-            if (testobj2 != null) { testobj2.Draw(Matrix4.CreateScale(.001f, .001f, .001f) * Matrix4.CreateTranslation(0, -0.02f, 0), PolygonMode.Fill); }
+            if (testobj != null){ testobj.Draw(Matrix4.CreateScale(.001f,.001f,.001f) * Matrix4.CreateTranslation(0.01f,-0.01f,0.01f), PolygonMode.Fill);}
+            if (testmap != null){ testmap.Draw(Matrix4.CreateScale(.01f, .01f, .01f) * Matrix4.CreateTranslation(-.5f, -0.2f, 0), PolygonMode.Line); }
             
 
 
