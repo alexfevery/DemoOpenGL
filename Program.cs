@@ -43,7 +43,6 @@ namespace ProjectCobalt
         }
 
         public static Content.Mesh testobj;
-        public static Content.Mesh testobj2;
         public static Content.Mesh testmap;
         public static void Load()
         {
