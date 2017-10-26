@@ -10,7 +10,7 @@ namespace ProjectCobalt
     {
         public static Matrix4 View;
         public static Matrix4 lookat;
-        public static Vector3 Position = new Vector3(0,0, -.01f);
+        public static Vector3 Position = new Vector3(+.5f, .3f, -.5f);
         public static Quaternion Orientation = Quaternion.Identity;
         public static Vector3 OrientationE = new Vector3();
         public static float MoveSpeed = 0.0001f;
@@ -18,9 +18,19 @@ namespace ProjectCobalt
 
         public static Matrix4 GetViewMatrix()
         {
-            return Matrix4.LookAt(Position, Position + Vector3.Transform(Vector3.UnitZ, Orientation), Vector3.Transform(Vector3.UnitY,Orientation)) * View;
+            return Matrix4.LookAt(Position, Position + Vector3.Transform(Vector3.UnitZ, Orientation), Vector3.Transform(Vector3.UnitY, Orientation)) * View;
         }
-       
+        public static Matrix4 GetViewMatrix(Vector3 position, Vector3 target, Vector3 up)
+        {
+            return Matrix4.LookAt(position, target, up) * View;
+        }
+
+        public static Vector3 GetForward()
+        {
+            return Vector3.Transform(Vector3.UnitZ, Orientation);
+        }
+
+
         public static void Move(float x, float y, float z)
         {
             Vector3 offset = new Vector3();

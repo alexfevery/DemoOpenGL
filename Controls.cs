@@ -12,6 +12,7 @@ namespace ProjectCobalt
         public static bool iskeydown = false;
         public static void GetControls()
         {
+            if (Mouse.GetState().IsButtonDown(MouseButton.Right)) { Lighting.LightList[0].Position = Camera.Position; }
             MouseState m1 = Mouse.GetState();
             KeyboardState k1 = Keyboard.GetState();
             LastMouseDelta = new Vector2(m1.X, m1.Y)-lastMousePos;
